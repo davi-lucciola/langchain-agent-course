@@ -1,4 +1,3 @@
-import os
 import json
 from typing import List
 import pandas as pd
@@ -8,11 +7,7 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 
-from utils import get_path
-
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
+from utils import OPENAI_API_KEY, get_path
 
 
 def get_student_data_by_name(name: str):
@@ -33,10 +28,14 @@ class StudentExtractor(BaseModel):
 
 class StudentDataTool(BaseTool):
     name: str = "StudentDataTool"
-    description: str = "Esta ferramenta extrai os dados de um estudante e suas preferências, ela recebe o nome do estudante como entrada."
+    description: str = """
+    Esta ferramenta extrai os dados de um estudante e suas preferências.
+    - Ela recebe o nome do estudante como entrada. 
+    - A entrada deve conter somente o nome, sem caracteres especiais ou de caracteres escape.
+    """
 
     def _run(self, input: str) -> str:
-        student_name: str = input.lower()
+        student_name: str = input.strip().lower()
         student = get_student_data_by_name(student_name)
 
         return json.dumps(student)
@@ -58,7 +57,8 @@ class StudentAcademicProfile(BaseModel):
 
 class AcademicProfileTool(BaseTool):
     name: str = "AcademicProfileTool"
-    description: str = """Cria um perfil acadêmico de um estudante.
+    description: str = """
+    Cria um perfil acadêmico de um estudante.
     Esta ferramenta requer como entrada todos os dados de um estudante 
     que precisam ser resgatados através ferramenta "StudentDataTool" antes de ser utilizada.
     """
